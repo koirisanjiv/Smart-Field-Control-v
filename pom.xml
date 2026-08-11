@@ -4,13 +4,13 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.qaverse.smart</groupId>
+    <groupId>com.qaverse</groupId>
     <artifactId>smart-field-control</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <name>smart-field-control</name>
     <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <url>http://www.qaverse.com</url>
      <packaging>jar</packaging>
 
     <properties>
@@ -20,10 +20,10 @@
 
     <distributionManagement>
         <repository>
-            <id>github</id>
+            <id>smart-field-control</id>
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/koirisanjiv/Smart-Field-Control-v</url>
-        </repository>
+        </repository>   
     </distributionManagement>
 
     <dependencies>
