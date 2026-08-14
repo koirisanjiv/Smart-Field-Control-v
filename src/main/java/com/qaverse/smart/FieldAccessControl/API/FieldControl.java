@@ -1,89 +1,141 @@
 package com.qaverse.smart.FieldAccessControl.API;
 
 import java.util.EnumMap;
+import java.util.Objects;
 
 import com.qaverse.smart.FieldAccessControl.Builder.FieldDefinitionBuilder;
 import com.qaverse.smart.FieldAccessControl.Builder.RuleBuilder;
 import com.qaverse.smart.FieldAccessControl.Configuration.ExecutionMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.OperationMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
-import com.qaverse.smart.FieldAccessControl.Execution.FieldExecutor;
+import com.qaverse.smart.FieldAccessControl.Execution.FieldEvaluator;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionContext;
+import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionPlan;
 
 public final class FieldControl {
 
-    private FieldControl() {
-    }
+	private FieldControl() {
+	}
 
-    /**
-     * Create a rule builder for a page.
-     */
-    public static <E extends Enum<E>> RuleBuilder<E> rules(
-            Class<E> page) {
+	// =========================================================
+	// CONFIGURATION API
+	// =========================================================
 
-        return new RuleBuilder<>(page);
-    }
+	/**
+	 * Create a rule builder for a page.
+	 */
+	public static <E extends Enum<E>> RuleBuilder<E> rules(Class<E> page) {
 
-    /**
-     * Create a field-definition builder for a page.
-     */
-    public static <E extends Enum<E>> FieldDefinitionBuilder<E> definitions(
-            Class<E> page) {
+		return new RuleBuilder<>(page);
+	}
 
-        return new FieldDefinitionBuilder<>(page);
-    }
+	/**
+	 * Create a field-definition builder for a page.
+	 */
+	public static <E extends Enum<E>> FieldDefinitionBuilder<E> definitions(Class<E> page) {
 
-    /**
-     * Execute field actions using the configured field-control rules.
-     */
-    public static <E extends Enum<E>> void execute(
-            Class<E> page,
-            OperationMode operationMode,
-            ExecutionMode executionMode,
-            UserType currentUser,
-            EnumMap<E, Object> fieldValues,
-            EnumMap<E, Runnable> fieldActions) {
+		return new FieldDefinitionBuilder<>(page);
+	}
 
-        FieldExecutionContext<E> context =
-                new FieldExecutionContext<>(
-                        page,
-                        operationMode,
-                        executionMode,
-                        currentUser,
-                        fieldValues,
-                        fieldActions
-                );
+	// =========================================================
+	// REQUEST API
+	// =========================================================
 
-        FieldExecutor.execute(context);
-    }
+	/**
+	 * Create a field-control request builder for a page.
+	 *
+	 * <p>
+	 * This is the recommended entry point for evaluation.
+	 * </p>
+	 */
+	public static <E extends Enum<E>> FieldControlRequest.Builder<E> request(Class<E> page) {
 
-    /**
-     * Execute using the page's default execution mode.
-     */
-    public static <E extends Enum<E>> void execute(
-            Class<E> page,
-            OperationMode operationMode,
-            UserType currentUser,
-            EnumMap<E, Object> fieldValues,
-            EnumMap<E, Runnable> fieldActions) {
+		return FieldControlRequest.builder(page);
+	}
 
-        execute(
-                page,
-                operationMode,
-                ExecutionMode.ALL_FIELDS,
-                currentUser,
-                fieldValues,
-                fieldActions
-        );
-    }
+	// =========================================================
+	// PRIMARY EVALUATION API
+	// =========================================================
 
-    /**
-     * Clear all configured rules and metadata.
-     */
-    public static void clear() {
-        com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry.clear();
-        com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry.clear();
-        com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry.clear();
-        com.qaverse.smart.FieldAccessControl.Registry.MetadataRegistry.clear();
-    }
+	/**
+	 * Evaluate field-control rules.
+	 *
+	 * <p>
+	 * Smart Field Control does not execute any UI action. It evaluates field
+	 * definitions, permissions, execution modes, and conditions and returns a field
+	 * execution plan.
+	 * </p>
+	 *
+	 * <p>
+	 * The returned plan is intended to be consumed by Smart Core for actual
+	 * automation execution.
+	 * </p>
+	 *
+	 * @param request field-control request
+	 * @return field execution plan
+	 */
+	public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(FieldControlRequest<E> request) {
+
+		Objects.requireNonNull(request, "Field control request cannot be null");
+
+		FieldExecutionContext<E> context = new FieldExecutionContext<>(request.getPage(), request.getOperationMode(),
+				request.getExecutionMode(), request.getCurrentUser(), request.getFieldValues());
+
+		return FieldEvaluator.evaluate(context);
+	}
+
+	// =========================================================
+	// COMPATIBILITY API
+	// =========================================================
+
+	/**
+	 * Evaluate field-control rules using explicit parameters.
+	 *
+	 * <p>
+	 * Kept temporarily for backward compatibility. New code should prefer
+	 * {@link #evaluate(FieldControlRequest)}.
+	 * </p>
+	 */
+	public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(Class<E> page, OperationMode operationMode,
+			ExecutionMode executionMode, UserType currentUser, EnumMap<E, Object> fieldValues) {
+
+		return evaluate(FieldControlRequest.builder(page).operationMode(operationMode).executionMode(executionMode)
+				.currentUser(currentUser).fieldValues(fieldValues).build());
+	}
+
+	/**
+	 * Evaluate using ALL_FIELDS as the default execution mode.
+	 *
+	 * <p>
+	 * Kept temporarily for backward compatibility.
+	 * </p>
+	 */
+	public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(Class<E> page, OperationMode operationMode,
+			UserType currentUser, EnumMap<E, Object> fieldValues) {
+
+		return evaluate(FieldControlRequest.builder(page).operationMode(operationMode).currentUser(currentUser)
+				.fieldValues(fieldValues).build());
+	}
+
+	// =========================================================
+	// LIFECYCLE / CLEANUP
+	// =========================================================
+
+	/**
+	 * Clear all configured rules, definitions, conditions, and page metadata.
+	 *
+	 * <p>
+	 * Primarily intended for test/framework lifecycle cleanup.
+	 * </p>
+	 */
+	public static void clear() {
+
+		com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry.clear();
+
+		com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry.clear();
+
+		com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry.clear();
+
+		com.qaverse.smart.FieldAccessControl.Registry.MetadataRegistry.clear();
+	}
 }

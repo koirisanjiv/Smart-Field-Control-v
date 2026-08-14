@@ -1,6 +1,7 @@
 package com.qaverse.smart.FieldAccessControl.Model;
 
 import java.util.EnumMap;
+import java.util.Objects;
 
 import com.qaverse.smart.FieldAccessControl.Configuration.ExecutionMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.OperationMode;
@@ -8,55 +9,63 @@ import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
 
 public final class FieldExecutionContext<E extends Enum<E>> {
 
-    private final Class<E> page;
+	private final Class<E> page;
 
-    private final OperationMode operationMode;
+	private final OperationMode operationMode;
 
-    private final ExecutionMode executionMode;
+	private final ExecutionMode executionMode;
 
-    private final UserType currentUser;
+	private final UserType currentUser;
 
-    private final EnumMap<E, Object> fieldValues;
+	private final EnumMap<E, Object> fieldValues;
 
-    private final EnumMap<E, Runnable> fieldActions;
+	public FieldExecutionContext(Class<E> page, OperationMode operationMode, ExecutionMode executionMode,
+			UserType currentUser, EnumMap<E, Object> fieldValues) {
 
-    public FieldExecutionContext(
-            Class<E> page,
-            OperationMode operationMode,
-            ExecutionMode executionMode,
-            UserType currentUser,
-            EnumMap<E, Object> fieldValues,
-            EnumMap<E, Runnable> fieldActions) {
+		this.page = Objects.requireNonNull(page, "Page cannot be null");
 
-        this.page = page;
-        this.operationMode = operationMode;
-        this.executionMode = executionMode;
-        this.currentUser = currentUser;
-        this.fieldValues = fieldValues;
-        this.fieldActions = fieldActions;
-    }
+		this.operationMode = Objects.requireNonNull(operationMode, "Operation mode cannot be null");
 
-    public Class<E> getPage() {
-        return page;
-    }
+		this.executionMode = Objects.requireNonNull(executionMode, "Execution mode cannot be null");
 
-    public OperationMode getOperationMode() {
-        return operationMode;
-    }
+		this.currentUser = Objects.requireNonNull(currentUser, "Current user cannot be null");
 
-    public ExecutionMode getExecutionMode() {
-        return executionMode;
-    }
+		Objects.requireNonNull(fieldValues, "Field values cannot be null");
 
-    public UserType getCurrentUser() {
-        return currentUser;
-    }
+		/*
+		 * Create an internal snapshot.
+		 *
+		 * The caller can modify its original EnumMap after this constructor returns
+		 * without affecting this execution context.
+		 */
+		this.fieldValues = new EnumMap<>(fieldValues);
+	}
 
-    public EnumMap<E, Object> getFieldValues() {
-        return fieldValues;
-    }
+	public Class<E> getPage() {
+		return page;
+	}
 
-    public EnumMap<E, Runnable> getFieldActions() {
-        return fieldActions;
-    }
+	public OperationMode getOperationMode() {
+		return operationMode;
+	}
+
+	public ExecutionMode getExecutionMode() {
+		return executionMode;
+	}
+
+	public UserType getCurrentUser() {
+		return currentUser;
+	}
+
+	/**
+	 * Returns a defensive copy of the field values.
+	 *
+	 * <p>
+	 * The internal execution snapshot cannot be modified by callers.
+	 * </p>
+	 */
+	public EnumMap<E, Object> getFieldValues() {
+
+		return new EnumMap<>(fieldValues);
+	}
 }

@@ -18,12 +18,23 @@ public final class FieldExecutor {
 	private FieldExecutor() {
 	}
 
+	/**
+	 * Evaluates field-control rules for the supplied execution context.
+	 *
+	 * <p>
+	 * Smart Field Control does NOT execute any UI action. It only evaluates whether
+	 * a field is allowed to be processed.
+	 * </p>
+	 *
+	 * <p>
+	 * UI execution will be handled by Smart Core.
+	 * </p>
+	 */
 	public static <E extends Enum<E>> void execute(FieldExecutionContext<E> context) {
 
 		Class<E> page = context.getPage();
 
 		EnumMap<E, Object> fieldValues = context.getFieldValues();
-		EnumMap<E, Runnable> fieldActions = context.getFieldActions();
 
 		printExecutionHeader(context);
 
@@ -33,60 +44,77 @@ public final class FieldExecutor {
 			Object value = entry.getValue();
 
 			System.out.println("\n-------------------------------------------------");
+
 			System.out.println("Processing Field : " + field);
 
 			/*
-			 * 1. Validate Excel value
+			 * =============================== 1. Validate field value	===============================
 			 */
+
 			if (!isValidValue(field, value)) {
 				continue;
 			}
 
 			/*
-			 * 2. Create field context
+			 * =============================== 2. Create field context	==================================
 			 */
+
 			FieldContext<E> fieldContext = new FieldContext<>(page, context.getOperationMode(),
 					context.getCurrentUser(), field);
 
 			printFieldLookup(fieldContext);
 
 			/*
-			 * 3. Field must be registered
+			 * ============================== 3. Field must be * registered ===================================
 			 */
+
 			if (!isFieldRegistered(fieldContext)) {
 				continue;
 			}
 
 			/*
-			 * 4. Check user-wise field behavior
+			 * ======================== 4. Check user-wise field behavior ==============================
 			 */
+
 			if (!isEditable(fieldContext)) {
 				continue;
 			}
 
 			/*
-			 * 5. Check mandatory / optional execution mode
+			 * ====================== 5. Check mandatory / optional execution mode ==========================
 			 */
+
 			FieldDefinition definition = FieldDefinitionRegistry.get(page, field);
 
 			if (!isAllowedByExecutionMode(context, definition)) {
+
 				continue;
 			}
 
 			/*
-			 * 6. Check conditional dependency
+			 * =========================6. Check conditional dependency ===========================
 			 */
+
 			if (!isConditionSatisfied(page, field, fieldValues)) {
+
 				continue;
 			}
 
 			/*
-			 * 7. Execute UI action
+			 * ==================== 7. FIELD PASSED ALL
+			 * CONTROL RULES ================================
+			 *
+			 * No UI action is executed here.
+			 *
+			 * Smart Field Control only determines that this field is allowed to proceed.
+			 *
+			 * Smart Core will consume this decision later.
 			 */
-			executeAction(field, fieldActions);
+
+			System.out.println("✅ Field Allowed : " + field);
 		}
 
-		System.out.println("\n=============== Field Execution Completed ===============\n");
+		System.out.println("\n=============== Field Evaluation Completed ===============\n");
 	}
 
 	// =========================================================
@@ -132,6 +160,7 @@ public final class FieldExecutor {
 		if (!FieldRegistry.isRegistered(fieldContext)) {
 
 			System.out.println("Behavior : NOT REGISTERED");
+
 			System.out.println("❌ Skipped : Field is not registered");
 
 			return false;
@@ -164,8 +193,7 @@ public final class FieldExecutor {
 	// MANDATORY / OPTIONAL CONTROL
 	// =========================================================
 
-	private static <E extends Enum<E>> boolean isAllowedByExecutionMode(
-			FieldExecutionContext<E> context,
+	private static <E extends Enum<E>> boolean isAllowedByExecutionMode(FieldExecutionContext<E> context,
 			FieldDefinition definition) {
 
 		if (definition == null) {
@@ -174,8 +202,7 @@ public final class FieldExecutor {
 
 		} else {
 
-			System.out.println(
-					"Definition : " + (definition.isMandatory() ? "MANDATORY" : "OPTIONAL"));
+			System.out.println("Definition : " + (definition.isMandatory() ? "MANDATORY" : "OPTIONAL"));
 		}
 
 		switch (context.getExecutionMode()) {
@@ -214,6 +241,13 @@ public final class FieldExecutor {
 
 		case CUSTOM_FIELDS:
 
+			/*
+			 * CUSTOM_FIELDS will be implemented later.
+			 *
+			 * We deliberately do not introduce the custom-field selection model in Point
+			 * #1.
+			 */
+
 			System.out.println("❌ Skipped : CUSTOM_FIELDS not implemented");
 
 			return false;
@@ -228,46 +262,41 @@ public final class FieldExecutor {
 	// CONDITIONAL FIELD CONTROL
 	// =========================================================
 
-	private static <E extends Enum<E>> boolean isConditionSatisfied(
-			Class<E> page,
-			E field,
+	private static <E extends Enum<E>> boolean isConditionSatisfied(Class<E> page, E field,
 			EnumMap<E, Object> fieldValues) {
 
 		/*
 		 * Direct lookup.
 		 *
-		 * If this field has no condition,
-		 * no condition processing is performed.
+		 * If this field has no condition, no condition processing is performed.
 		 */
+
 		FieldCondition<E> condition = FieldConditionRegistry.get(page, field);
 
 		if (condition == null) {
+
 			return true;
 		}
 
 		/*
-		 * This field is condition-controlled.
+		 * ===================================================== Field is
+		 * condition-controlled =====================================================
 		 */
+
 		E controllerField = condition.getControllerField();
 
 		Object controllerValue = fieldValues.get(controllerField);
 
-		boolean result = ConditionEvaluator.evaluate(
-				controllerValue,
-				condition.getOperator(),
+		boolean result = ConditionEvaluator.evaluate(controllerValue, condition.getOperator(),
 				condition.getExpectedValue());
 
-		System.out.println(
-				"Condition Controller : " + controllerField
-						+ " | Operator : " + condition.getOperator()
-						+ " | Expected : " + condition.getExpectedValue()
-						+ " | Actual : " + controllerValue
-						+ " | Result : " + result);
+		System.out.println("Condition Controller : " + controllerField + " | Operator : " + condition.getOperator()
+				+ " | Expected : " + condition.getExpectedValue() + " | Actual : " + controllerValue + " | Result : "
+				+ result);
 
 		if (!result) {
 
-			System.out.println(
-					"❌ Skipped : Condition not satisfied for " + field);
+			System.out.println("❌ Skipped : Condition not satisfied for " + field);
 
 			return false;
 		}
@@ -276,78 +305,27 @@ public final class FieldExecutor {
 	}
 
 	// =========================================================
-	// ACTION EXECUTION
+	// LOGGING / DEBUG
 	// =========================================================
 
-	private static <E extends Enum<E>> void executeAction(
-			E field,
-			EnumMap<E, Runnable> fieldActions) {
+	private static <E extends Enum<E>> void printFieldLookup(FieldContext<E> fieldContext) {
 
-		Runnable action = fieldActions.get(field);
-
-		if (action == null) {
-
-			System.out.println("❌ Skipped : No Runnable registered");
-
-			return;
-		}
-
-		System.out.println("✅ Executing Action : " + field);
-
-		try {
-
-			action.run();
-
-			System.out.println("✅ Completed : " + field);
-
-		} catch (Exception e) {
-
-			System.out.println("❌ Exception while executing : " + field);
-
-			e.printStackTrace();
-
-			throw e;
-		}
+		System.out
+				.println("LOOKUP : " + fieldContext.getPage().getSimpleName() + " | " + fieldContext.getOperationMode()
+						+ " | " + fieldContext.getUserType() + " | " + fieldContext.getField());
 	}
 
-	// =========================================================
-	// LOGGING
-	// =========================================================
-
-	private static <E extends Enum<E>> void printFieldLookup(
-			FieldContext<E> fieldContext) {
-
-		System.out.println(
-				"LOOKUP : "
-						+ fieldContext.getPage().getSimpleName()
-						+ " | "
-						+ fieldContext.getOperationMode()
-						+ " | "
-						+ fieldContext.getUserType()
-						+ " | "
-						+ fieldContext.getField());
-	}
-
-	private static <E extends Enum<E>> void printExecutionHeader(
-			FieldExecutionContext<E> context) {
+	private static <E extends Enum<E>> void printExecutionHeader(FieldExecutionContext<E> context) {
 
 		System.out.println("\n=================================================");
 
-		System.out.println(
-				"Page           : "
-						+ context.getPage().getSimpleName());
+		System.out.println("Page           : " + context.getPage().getSimpleName());
 
-		System.out.println(
-				"Operation Mode : "
-						+ context.getOperationMode());
+		System.out.println("Operation Mode : " + context.getOperationMode());
 
-		System.out.println(
-				"Execution Mode : "
-						+ context.getExecutionMode());
+		System.out.println("Execution Mode : " + context.getExecutionMode());
 
-		System.out.println(
-				"Current User   : "
-						+ context.getCurrentUser());
+		System.out.println("Current User   : " + context.getCurrentUser());
 
 		System.out.println("=================================================\n");
 	}
