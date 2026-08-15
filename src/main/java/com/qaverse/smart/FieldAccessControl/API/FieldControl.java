@@ -89,7 +89,7 @@ public final class FieldControl {
      */
     public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(
             FieldControlRequest<E> request) {
-
+    	
         Objects.requireNonNull(
                 request,
                 FieldControlMessage.REQUEST_NULL.getMessage());

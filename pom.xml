@@ -6,7 +6,7 @@
 
     <groupId>com.qaverse</groupId>
     <artifactId>smart-field-control</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
 
     <name>smart-field-control</name>
     <!-- FIXME change it to the project's website -->
@@ -28,8 +28,7 @@
 
     <repositories>
         <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
+            <id>smart-logger</id>
             <url>https://maven.pkg.github.com/koirisanjiv/smart-logger</url>
         </repository>
     </repositories>
@@ -39,7 +38,7 @@
         <dependency>
             <groupId>com.qaverse</groupId>
             <artifactId>smart-logger</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
 
     </dependencies>
