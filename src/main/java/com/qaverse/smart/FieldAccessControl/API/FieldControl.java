@@ -11,131 +11,202 @@ import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
 import com.qaverse.smart.FieldAccessControl.Execution.FieldEvaluator;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionContext;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionPlan;
+import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldControl {
 
-	private FieldControl() {
-	}
+    private FieldControl() {
+    }
 
-	// =========================================================
-	// CONFIGURATION API
-	// =========================================================
+    // =========================================================
+    // CONFIGURATION API
+    // =========================================================
 
-	/**
-	 * Create a rule builder for a page.
-	 */
-	public static <E extends Enum<E>> RuleBuilder<E> rules(Class<E> page) {
+    /**
+     * Create a rule builder for a page.
+     */
+    public static <E extends Enum<E>> RuleBuilder<E> rules(Class<E> page) {
 
-		return new RuleBuilder<>(page);
-	}
+        SmartLog.debug(() ->
+                "Creating rule builder | page="
+                + (page != null ? page.getSimpleName() : "null"));
 
-	/**
-	 * Create a field-definition builder for a page.
-	 */
-	public static <E extends Enum<E>> FieldDefinitionBuilder<E> definitions(Class<E> page) {
+        return new RuleBuilder<>(page);
+    }
 
-		return new FieldDefinitionBuilder<>(page);
-	}
+    /**
+     * Create a field-definition builder for a page.
+     */
+    public static <E extends Enum<E>> FieldDefinitionBuilder<E> definitions(Class<E> page) {
 
-	// =========================================================
-	// REQUEST API
-	// =========================================================
+        SmartLog.debug(() ->
+                "Creating field-definition builder | page="
+                + (page != null ? page.getSimpleName() : "null"));
 
-	/**
-	 * Create a field-control request builder for a page.
-	 *
-	 * <p>
-	 * This is the recommended entry point for evaluation.
-	 * </p>
-	 */
-	public static <E extends Enum<E>> FieldControlRequest.Builder<E> request(Class<E> page) {
+        return new FieldDefinitionBuilder<>(page);
+    }
 
-		return FieldControlRequest.builder(page);
-	}
+    // =========================================================
+    // REQUEST API
+    // =========================================================
 
-	// =========================================================
-	// PRIMARY EVALUATION API
-	// =========================================================
+    /**
+     * Create a field-control request builder for a page.
+     *
+     * <p>
+     * This is the recommended entry point for evaluation.
+     * </p>
+     */
+    public static <E extends Enum<E>> FieldControlRequest.Builder<E> request(Class<E> page) {
 
-	/**
-	 * Evaluate field-control rules.
-	 *
-	 * <p>
-	 * Smart Field Control does not execute any UI action. It evaluates field
-	 * definitions, permissions, execution modes, and conditions and returns a field
-	 * execution plan.
-	 * </p>
-	 *
-	 * <p>
-	 * The returned plan is intended to be consumed by Smart Core for actual
-	 * automation execution.
-	 * </p>
-	 *
-	 * @param request field-control request
-	 * @return field execution plan
-	 */
-	public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(FieldControlRequest<E> request) {
+        SmartLog.debug(() ->
+                "Creating field-control request | page="
+                + (page != null ? page.getSimpleName() : "null"));
 
-		Objects.requireNonNull(request, "Field control request cannot be null");
+        return FieldControlRequest.builder(page);
+    }
 
-		FieldExecutionContext<E> context = new FieldExecutionContext<>(request.getPage(), request.getOperationMode(),
-				request.getExecutionMode(), request.getCurrentUser(), request.getFieldValues());
+    // =========================================================
+    // PRIMARY EVALUATION API
+    // =========================================================
 
-		return FieldEvaluator.evaluate(context);
-	}
+    /**
+     * Evaluate field-control rules.
+     *
+     * <p>
+     * Smart Field Control does not execute any UI action. It evaluates field
+     * definitions, permissions, execution modes, and conditions and returns a
+     * field execution plan.
+     * </p>
+     *
+     * <p>
+     * The returned plan is intended to be consumed by Smart Core for actual
+     * automation execution.
+     * </p>
+     *
+     * @param request field-control request
+     * @return field execution plan
+     */
+    public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(
+            FieldControlRequest<E> request) {
 
-	// =========================================================
-	// COMPATIBILITY API
-	// =========================================================
+        Objects.requireNonNull(
+                request,
+                FieldControlMessage.REQUEST_NULL.getMessage());
 
-	/**
-	 * Evaluate field-control rules using explicit parameters.
-	 *
-	 * <p>
-	 * Kept temporarily for backward compatibility. New code should prefer
-	 * {@link #evaluate(FieldControlRequest)}.
-	 * </p>
-	 */
-	public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(Class<E> page, OperationMode operationMode,
-			ExecutionMode executionMode, UserType currentUser, EnumMap<E, Object> fieldValues) {
+        String pageName = request.getPage().getSimpleName();
 
-		return evaluate(FieldControlRequest.builder(page).operationMode(operationMode).executionMode(executionMode)
-				.currentUser(currentUser).fieldValues(fieldValues).build());
-	}
+        SmartLog.debug(() ->
+                FieldControlMessage.EVALUATION_STARTED.getMessage()
+                + " | page=" + pageName
+                + " | operationMode=" + request.getOperationMode()
+                + " | executionMode=" + request.getExecutionMode());
 
-	/**
-	 * Evaluate using ALL_FIELDS as the default execution mode.
-	 *
-	 * <p>
-	 * Kept temporarily for backward compatibility.
-	 * </p>
-	 */
-	public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(Class<E> page, OperationMode operationMode,
-			UserType currentUser, EnumMap<E, Object> fieldValues) {
+        try {
 
-		return evaluate(FieldControlRequest.builder(page).operationMode(operationMode).currentUser(currentUser)
-				.fieldValues(fieldValues).build());
-	}
+            FieldExecutionContext<E> context =
+                    new FieldExecutionContext<>(
+                            request.getPage(),
+                            request.getOperationMode(),
+                            request.getExecutionMode(),
+                            request.getCurrentUser(),
+                            request.getFieldValues());
 
-	// =========================================================
-	// LIFECYCLE / CLEANUP
-	// =========================================================
+            FieldExecutionPlan<E> plan = FieldEvaluator.evaluate(context);
 
-	/**
-	 * Clear all configured rules, definitions, conditions, and page metadata.
-	 *
-	 * <p>
-	 * Primarily intended for test/framework lifecycle cleanup.
-	 * </p>
-	 */
-	public static void clear() {
+            SmartLog.debug(() ->
+                    FieldControlMessage.EVALUATION_COMPLETED.getMessage()
+                    + " | page=" + pageName);
 
-		com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry.clear();
+            return plan;
 
-		com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry.clear();
+        } catch (RuntimeException exception) {
 
-		com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry.clear();
+            SmartLog.error( () ->
+                    FieldControlMessage.EVALUATION_FAILED.getMessage()
+                    + " | page=" + pageName,
+                    exception);
 
-		com.qaverse.smart.FieldAccessControl.Registry.MetadataRegistry.clear();
-	}
+            throw exception;
+        }
+    }
+
+    // =========================================================
+    // COMPATIBILITY API
+    // =========================================================
+
+    /**
+     * Evaluate field-control rules using explicit parameters.
+     *
+     * <p>
+     * Kept temporarily for backward compatibility. New code should prefer
+     * {@link #evaluate(FieldControlRequest)}.
+     * </p>
+     */
+    public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(
+            Class<E> page,
+            OperationMode operationMode,
+            ExecutionMode executionMode,
+            UserType currentUser,
+            EnumMap<E, Object> fieldValues) {
+
+        return evaluate(
+                FieldControlRequest
+                        .builder(page)
+                        .operationMode(operationMode)
+                        .executionMode(executionMode)
+                        .currentUser(currentUser)
+                        .fieldValues(fieldValues)
+                        .build());
+    }
+
+    /**
+     * Evaluate using ALL_FIELDS as the default execution mode.
+     *
+     * <p>
+     * Kept temporarily for backward compatibility.
+     * </p>
+     */
+    public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(
+            Class<E> page,
+            OperationMode operationMode,
+            UserType currentUser,
+            EnumMap<E, Object> fieldValues) {
+
+        return evaluate(
+                FieldControlRequest
+                        .builder(page)
+                        .operationMode(operationMode)
+                        .currentUser(currentUser)
+                        .fieldValues(fieldValues)
+                        .build());
+    }
+
+    // =========================================================
+    // LIFECYCLE / CLEANUP
+    // =========================================================
+
+    /**
+     * Clear all configured rules, definitions, conditions, and page metadata.
+     *
+     * <p>
+     * Primarily intended for test/framework lifecycle cleanup.
+     * </p>
+     */
+    public static void clear() {
+
+        SmartLog.debug(() ->
+                FieldControlMessage.REGISTRY_CLEANUP_STARTED.getMessage());
+
+        com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry.clear();
+
+        com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry.clear();
+
+        com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry.clear();
+
+        com.qaverse.smart.FieldAccessControl.Registry.MetadataRegistry.clear();
+
+        SmartLog.debug(() ->
+                FieldControlMessage.REGISTRY_CLEANUP_COMPLETED.getMessage());
+    }
 }

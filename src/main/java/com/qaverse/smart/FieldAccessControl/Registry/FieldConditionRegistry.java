@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.qaverse.smart.FieldAccessControl.Builder.ConditionBuilder;
 import com.qaverse.smart.FieldAccessControl.Condition.ConditionOperator;
 import com.qaverse.smart.FieldAccessControl.Condition.FieldCondition;
+import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldConditionRegistry {
 
@@ -67,7 +68,7 @@ public final class FieldConditionRegistry {
             if (dependentField == null) {
 
                 throw new IllegalArgumentException(
-                        "Dependent field cannot be null"
+                        RegistryMessage.DEPENDENT_FIELD_NULL.getMessage()
                 );
             }
 
@@ -75,7 +76,8 @@ public final class FieldConditionRegistry {
                     condition.getControllerField())) {
 
                 throw new IllegalArgumentException(
-                        "A field cannot control itself: "
+                        RegistryMessage.FIELD_CANNOT_CONTROL_ITSELF.getMessage()
+                        + ": "
                         + dependentField
                 );
             }
@@ -85,14 +87,23 @@ public final class FieldConditionRegistry {
                     condition
             );
 
-            System.out.println(
-                    "Registered Condition : "
+            /*
+             * Lazy logging:
+             *
+             * The message is constructed only when DEBUG logging
+             * is actually enabled.
+             */
+            SmartLog.debug(() ->
+                    RegistryMessage.CONDITION_REGISTERED.getMessage()
+                    + " | page="
                     + page.getSimpleName()
-                    + " | Controller : "
+                    + " | controller="
                     + condition.getControllerField()
-                    + " | Operator : "
+                    + " | operator="
                     + condition.getOperator()
-                    + " | Dependent : "
+                    + " | expected="
+                    + condition.getExpectedValue()
+                    + " | dependent="
                     + dependentField
             );
         }
@@ -155,6 +166,11 @@ public final class FieldConditionRegistry {
     // =========================================================
 
     public static void clear() {
+
         CONDITIONS.clear();
+
+        SmartLog.debug(() ->
+                "Field condition registry cleared"
+        );
     }
 }

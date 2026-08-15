@@ -1,63 +1,58 @@
 package com.qaverse.smart.FieldAccessControl.Condition;
 
+import com.qaverse.smart.logger.SmartLog;
+
 public final class FieldCondition<E extends Enum<E>> {
 
-    private final E controllerField;
-    private final ConditionOperator operator;
-    private final Object expectedValue;
+	private final E controllerField;
+	private final ConditionOperator operator;
+	private final Object expectedValue;
 
-    public FieldCondition(
-            E controllerField,
-            ConditionOperator operator) {
+	public FieldCondition(E controllerField, ConditionOperator operator) {
 
-        this(
-                controllerField,
-                operator,
-                null
-        );
-    }
+		this(controllerField, operator, null);
+	}
 
-    public FieldCondition(
-            E controllerField,
-            ConditionOperator operator,
-            Object expectedValue) {
+	public FieldCondition(E controllerField, ConditionOperator operator, Object expectedValue) {
 
-        if (controllerField == null) {
-            throw new IllegalArgumentException(
-                    "Controller field cannot be null"
-            );
-        }
+		if (controllerField == null) {
 
-        if (operator == null) {
-            throw new IllegalArgumentException(
-                    "Condition operator cannot be null"
-            );
-        }
+			SmartLog.error(ConditionMessage.CONTROLLER_FIELD_NULL::getMessage);
 
-        this.controllerField = controllerField;
-        this.operator = operator;
-        this.expectedValue = expectedValue;
-    }
+			throw new IllegalArgumentException(ConditionMessage.CONTROLLER_FIELD_NULL.getMessage());
+		}
 
-    public E getControllerField() {
-        return controllerField;
-    }
+		if (operator == null) {
 
-    public ConditionOperator getOperator() {
-        return operator;
-    }
+			SmartLog.error(ConditionMessage.CONDITION_OPERATOR_NULL::getMessage);
 
-    public Object getExpectedValue() {
-        return expectedValue;
-    }
+			throw new IllegalArgumentException(ConditionMessage.CONDITION_OPERATOR_NULL.getMessage());
+		}
 
-    @Override
-    public String toString() {
+		this.controllerField = controllerField;
+		this.operator = operator;
+		this.expectedValue = expectedValue;
 
-        return "FieldCondition{" +
-                "controllerField=" + controllerField +
-                ", operator=" + operator +
-                ", expectedValue=" + expectedValue +
-                '}';
-    }
+		SmartLog.debug(() -> "Field condition created | controllerField=" + controllerField + " | operator=" + operator
+				+ " | expectedValue=" + expectedValue);
+	}
+
+	public E getControllerField() {
+		return controllerField;
+	}
+
+	public ConditionOperator getOperator() {
+		return operator;
+	}
+
+	public Object getExpectedValue() {
+		return expectedValue;
+	}
+
+	@Override
+	public String toString() {
+
+		return "FieldCondition{" + "controllerField=" + controllerField + ", operator=" + operator + ", expectedValue="
+				+ expectedValue + '}';
+	}
 }

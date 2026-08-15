@@ -7,53 +7,73 @@ import com.qaverse.smart.FieldAccessControl.Execution.FieldEvaluationStatus;
 
 public final class FieldDecision<E extends Enum<E>> {
 
-	private final E field;
-	private final Object value;
-	private final FieldBehavior behavior;
-	private final FieldEvaluationStatus status;
-	private final String reason;
+    private final E field;
 
-	public FieldDecision(E field, Object value, FieldBehavior behavior, FieldEvaluationStatus status, String reason) {
+    private final Object value;
 
-		this.field = Objects.requireNonNull(field, "Field cannot be null");
+    private final FieldBehavior behavior;
 
-		this.value = value;
+    private final FieldEvaluationStatus status;
 
-		this.behavior = behavior;
+    private final String reason;
 
-		this.status = Objects.requireNonNull(status, "Evaluation status cannot be null");
+    public FieldDecision(
+            E field,
+            Object value,
+            FieldBehavior behavior,
+            FieldEvaluationStatus status,
+            String reason) {
 
-		this.reason = reason;
-	}
+        this.field = Objects.requireNonNull(
+                field,
+                ModelMessage.FIELD_NULL.getMessage()
+        );
 
-	public E getField() {
-		return field;
-	}
+        this.value = value;
 
-	public Object getValue() {
-		return value;
-	}
+        this.behavior = behavior;
 
-	public FieldBehavior getBehavior() {
-		return behavior;
-	}
+        this.status = Objects.requireNonNull(
+                status,
+                ModelMessage.EVALUATION_STATUS_NULL.getMessage()
+        );
 
-	public FieldEvaluationStatus getStatus() {
-		return status;
-	}
+        this.reason = reason;
+    }
 
-	public String getReason() {
-		return reason;
-	}
+    public E getField() {
+        return field;
+    }
 
-	public boolean isAllowed() {
-		return status == FieldEvaluationStatus.ALLOWED;
-	}
+    public Object getValue() {
+        return value;
+    }
 
-	@Override
-	public String toString() {
+    public FieldBehavior getBehavior() {
+        return behavior;
+    }
 
-		return "FieldDecision{" + "field=" + field + ", value=" + value + ", behavior=" + behavior + ", status="
-				+ status + ", reason='" + reason + '\'' + '}';
-	}
+    public FieldEvaluationStatus getStatus() {
+        return status;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public boolean isAllowed() {
+        return status == FieldEvaluationStatus.ALLOWED;
+    }
+
+    @Override
+    public String toString() {
+
+        return "FieldDecision{"
+                + "field=" + field
+                + ", value=" + value
+                + ", behavior=" + behavior
+                + ", status=" + status
+                + ", reason='" + reason + '\''
+                + '}';
+    }
 }

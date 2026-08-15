@@ -7,66 +7,84 @@ import java.util.Objects;
 
 public final class FieldExecutionPlan<E extends Enum<E>> {
 
-	private final Class<E> page;
+    private final Class<E> page;
 
-	private final List<FieldDecision<E>> decisions;
+    private final List<FieldDecision<E>> decisions;
 
-	public FieldExecutionPlan(Class<E> page, List<FieldDecision<E>> decisions) {
+    public FieldExecutionPlan(
+            Class<E> page,
+            List<FieldDecision<E>> decisions) {
 
-		this.page = Objects.requireNonNull(page, "Page cannot be null");
+        this.page = Objects.requireNonNull(
+                page,
+                ModelMessage.PAGE_NULL.getMessage()
+        );
 
-		Objects.requireNonNull(decisions, "Decisions cannot be null");
+        Objects.requireNonNull(
+                decisions,
+                ModelMessage.DECISIONS_NULL.getMessage()
+        );
 
-		this.decisions = Collections.unmodifiableList(new ArrayList<>(decisions));
-	}
+        this.decisions =
+                Collections.unmodifiableList(
+                        new ArrayList<>(decisions)
+                );
+    }
 
-	public Class<E> getPage() {
-		return page;
-	}
+    public Class<E> getPage() {
+        return page;
+    }
 
-	public List<FieldDecision<E>> getDecisions() {
-		return decisions;
-	}
+    public List<FieldDecision<E>> getDecisions() {
+        return decisions;
+    }
 
-	public List<FieldDecision<E>> getAllowedFields() {
+    public List<FieldDecision<E>> getAllowedFields() {
 
-		List<FieldDecision<E>> allowed = new ArrayList<>();
+        List<FieldDecision<E>> allowed =
+                new ArrayList<>();
 
-		for (FieldDecision<E> decision : decisions) {
+        for (FieldDecision<E> decision : decisions) {
 
-			if (decision.isAllowed()) {
-				allowed.add(decision);
-			}
-		}
+            if (decision.isAllowed()) {
+                allowed.add(decision);
+            }
+        }
 
-		return Collections.unmodifiableList(allowed);
-	}
+        return Collections.unmodifiableList(allowed);
+    }
 
-	public List<FieldDecision<E>> getSkippedFields() {
+    public List<FieldDecision<E>> getSkippedFields() {
 
-		List<FieldDecision<E>> skipped = new ArrayList<>();
+        List<FieldDecision<E>> skipped =
+                new ArrayList<>();
 
-		for (FieldDecision<E> decision : decisions) {
+        for (FieldDecision<E> decision : decisions) {
 
-			if (!decision.isAllowed()) {
-				skipped.add(decision);
-			}
-		}
+            if (!decision.isAllowed()) {
+                skipped.add(decision);
+            }
+        }
 
-		return Collections.unmodifiableList(skipped);
-	}
+        return Collections.unmodifiableList(skipped);
+    }
 
-	public boolean hasExecutableFields() {
-		return decisions.stream().anyMatch(FieldDecision::isAllowed);
-	}
+    public boolean hasExecutableFields() {
 
-	public int size() {
-		return decisions.size();
-	}
+        return decisions.stream()
+                .anyMatch(FieldDecision::isAllowed);
+    }
 
-	@Override
-	public String toString() {
+    public int size() {
+        return decisions.size();
+    }
 
-		return "FieldExecutionPlan{" + "page=" + page.getSimpleName() + ", decisions=" + decisions + '}';
-	}
+    @Override
+    public String toString() {
+
+        return "FieldExecutionPlan{"
+                + "page=" + page.getSimpleName()
+                + ", decisions=" + decisions
+                + '}';
+    }
 }

@@ -5,6 +5,7 @@ import com.qaverse.smart.FieldAccessControl.Configuration.OperationMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
 import com.qaverse.smart.FieldAccessControl.Model.FieldContext;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry;
+import com.qaverse.smart.logger.SmartLog;
 
 public final class RuleBuilder<F extends Enum<F>> {
 
@@ -12,6 +13,10 @@ public final class RuleBuilder<F extends Enum<F>> {
 
     public RuleBuilder(Class<F> page) {
         this.page = page;
+
+        SmartLog.debug(() ->
+                "Rule builder created | page="
+                + (page != null ? page.getSimpleName() : "null"));
     }
 
     public void editable(
@@ -59,6 +64,18 @@ public final class RuleBuilder<F extends Enum<F>> {
             FieldBehavior behavior,
             F... fields) {
 
+        SmartLog.debug(() ->
+                "Registering field rules | page="
+                + page.getSimpleName()
+                + " | operationMode="
+                + mode
+                + " | userType="
+                + userType
+                + " | behavior="
+                + behavior
+                + " | fieldCount="
+                + fields.length);
+
         for (F field : fields) {
 
             FieldRegistry.register(
@@ -71,5 +88,13 @@ public final class RuleBuilder<F extends Enum<F>> {
                     behavior
             );
         }
+
+        SmartLog.debug(() ->
+                "Field rules registered | page="
+                + page.getSimpleName()
+                + " | behavior="
+                + behavior
+                + " | fieldCount="
+                + fields.length);
     }
 }

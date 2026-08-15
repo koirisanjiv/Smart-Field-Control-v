@@ -1,5 +1,7 @@
 package com.qaverse.smart.FieldAccessControl.Condition;
 
+import com.qaverse.smart.logger.SmartLog;
+
 public final class ConditionEvaluator {
 
     private ConditionEvaluator() {
@@ -10,39 +12,64 @@ public final class ConditionEvaluator {
             ConditionOperator operator,
             Object expectedValue) {
 
+        SmartLog.debug(() ->
+                "Evaluating field condition | operator="
+                + operator
+                + " | actualValue="
+                + actualValue
+                + " | expectedValue="
+                + expectedValue);
+
         String actual =
                 actualValue == null
                         ? ""
                         : actualValue.toString().trim();
 
+        boolean result;
+
         switch (operator) {
 
             case EQUALS:
-                return actual.equalsIgnoreCase(
+                result = actual.equalsIgnoreCase(
                         String.valueOf(expectedValue).trim()
                 );
+                break;
 
             case NOT_EQUALS:
-                return !actual.equalsIgnoreCase(
+                result = !actual.equalsIgnoreCase(
                         String.valueOf(expectedValue).trim()
                 );
+                break;
 
             case TRUE:
-                return Boolean.parseBoolean(actual);
+                result = Boolean.parseBoolean(actual);
+                break;
 
             case FALSE:
-                return !Boolean.parseBoolean(actual);
+                result = !Boolean.parseBoolean(actual);
+                break;
 
             case NOT_EMPTY:
-                return !actual.isEmpty()
+                result = !actual.isEmpty()
                         && !"NA".equalsIgnoreCase(actual);
+                break;
 
             case EMPTY:
-                return actual.isEmpty()
+                result = actual.isEmpty()
                         || "NA".equalsIgnoreCase(actual);
+                break;
 
             default:
-                return false;
+                result = false;
+                break;
         }
+
+        SmartLog.debug(() ->
+                "Field condition evaluated | operator="
+                + operator
+                + " | result="
+                + result);
+
+        return result;
     }
 }
