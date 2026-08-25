@@ -6,13 +6,13 @@ import java.util.Map;
 import com.qaverse.smart.FieldAccessControl.Condition.ConditionEvaluator;
 import com.qaverse.smart.FieldAccessControl.Condition.FieldCondition;
 import com.qaverse.smart.FieldAccessControl.Configuration.FieldBehavior;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 import com.qaverse.smart.FieldAccessControl.Model.FieldContext;
 import com.qaverse.smart.FieldAccessControl.Model.FieldDefinition;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionContext;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry;
-import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldExecutor {
 
@@ -51,7 +51,7 @@ public final class FieldExecutor {
             Object value =
                     entry.getValue();
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Processing field"
                     + " | page=" + page.getSimpleName()
                     + " | field=" + field
@@ -149,14 +149,14 @@ public final class FieldExecutor {
              * ===============================
              */
 
-            SmartLog.success(
+            FieldControlLogger.success(
                     "Field allowed"
                     + " | page=" + page.getSimpleName()
                     + " | field=" + field
             );
         }
 
-        SmartLog.step(
+        FieldControlLogger.step(
                 "Field evaluation completed"
                 + " | page=" + page.getSimpleName()
         );
@@ -173,7 +173,7 @@ public final class FieldExecutor {
 
         if (value == null) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field skipped"
                     + " | field=" + field
                     + " | reason=value is NULL"
@@ -187,7 +187,7 @@ public final class FieldExecutor {
 
         if (text.isEmpty()) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field skipped"
                     + " | field=" + field
                     + " | reason=empty value"
@@ -198,7 +198,7 @@ public final class FieldExecutor {
 
         if ("NA".equalsIgnoreCase(text)) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field skipped"
                     + " | field=" + field
                     + " | reason=NA value"
@@ -221,7 +221,7 @@ public final class FieldExecutor {
         if (!FieldRegistry.isRegistered(
                 fieldContext)) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field skipped"
                     + " | field="
                     + fieldContext.getField()
@@ -249,7 +249,7 @@ public final class FieldExecutor {
                         fieldContext
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field behavior resolved"
                 + " | field="
                 + fieldContext.getField()
@@ -258,7 +258,7 @@ public final class FieldExecutor {
 
         if (behavior != FieldBehavior.EDITABLE) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field skipped"
                     + " | field="
                     + fieldContext.getField()
@@ -283,7 +283,7 @@ public final class FieldExecutor {
             FieldExecutionContext<E> context,
             FieldDefinition definition) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Checking execution mode"
                 + " | executionMode="
                 + context.getExecutionMode()
@@ -302,7 +302,7 @@ public final class FieldExecutor {
             if (definition == null
                     || !definition.isMandatory()) {
 
-                SmartLog.debug(() ->
+                FieldControlLogger.debug(() ->
                         "Field skipped"
                         + " | reason="
                         + ExecutionMessage
@@ -320,7 +320,7 @@ public final class FieldExecutor {
             if (definition != null
                     && definition.isMandatory()) {
 
-                SmartLog.debug(() ->
+                FieldControlLogger.debug(() ->
                         "Field skipped"
                         + " | reason="
                         + ExecutionMessage
@@ -335,7 +335,7 @@ public final class FieldExecutor {
 
         case CUSTOM_FIELDS:
 
-            SmartLog.debug(
+            FieldControlLogger.debug(
                     ExecutionMessage
                             .CUSTOM_FIELDS_NOT_IMPLEMENTED
                             .getMessage()
@@ -345,7 +345,7 @@ public final class FieldExecutor {
 
         default:
 
-            SmartLog.warn(() ->
+            FieldControlLogger.warn(() ->
                     ExecutionMessage
                             .UNSUPPORTED_EXECUTION_MODE
                             .getMessage()
@@ -416,7 +416,7 @@ public final class FieldExecutor {
                         condition.getExpectedValue()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field condition evaluated"
                 + " | page=" + page.getSimpleName()
                 + " | field=" + field
@@ -428,7 +428,7 @@ public final class FieldExecutor {
 
         if (!result) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field skipped"
                     + " | field=" + field
                     + " | reason="
@@ -451,7 +451,7 @@ public final class FieldExecutor {
     void logFieldLookup(
             FieldContext<E> fieldContext) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field lookup"
                 + " | page="
                 + fieldContext.getPage().getSimpleName()
@@ -468,7 +468,7 @@ public final class FieldExecutor {
     void logExecutionHeader(
             FieldExecutionContext<E> context) {
 
-        SmartLog.step(
+        FieldControlLogger.step(
                 "Field execution started"
                 + " | page="
                 + context.getPage().getSimpleName()

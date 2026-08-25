@@ -8,6 +8,7 @@ import java.util.Map;
 import com.qaverse.smart.FieldAccessControl.Condition.ConditionEvaluator;
 import com.qaverse.smart.FieldAccessControl.Condition.FieldCondition;
 import com.qaverse.smart.FieldAccessControl.Configuration.FieldBehavior;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 import com.qaverse.smart.FieldAccessControl.Model.FieldContext;
 import com.qaverse.smart.FieldAccessControl.Model.FieldDecision;
 import com.qaverse.smart.FieldAccessControl.Model.FieldDefinition;
@@ -16,7 +17,6 @@ import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionPlan;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry;
-import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldEvaluator {
 
@@ -43,7 +43,7 @@ public final class FieldEvaluator {
         EnumMap<E, Object> fieldValues =
                 context.getFieldValues();
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field control evaluation started"
                 + " | page=" + page.getSimpleName()
                 + " | operationMode=" + context.getOperationMode()
@@ -73,7 +73,7 @@ public final class FieldEvaluator {
 
             decisions.add(result.toDecision());
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field evaluation completed"
                     + " | page=" + page.getSimpleName()
                     + " | field=" + field
@@ -89,7 +89,7 @@ public final class FieldEvaluator {
                         decisions
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field control evaluation completed"
                 + " | page=" + page.getSimpleName()
                 + " | decisions=" + decisions.size()
@@ -116,7 +116,7 @@ public final class FieldEvaluator {
 
         if (!isValidValue(value)) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field evaluation skipped"
                     + " | field=" + field
                     + " | reason="
@@ -155,7 +155,7 @@ public final class FieldEvaluator {
 
         if (!FieldRegistry.isRegistered(fieldContext)) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field evaluation skipped"
                     + " | field=" + field
                     + " | reason="
@@ -195,7 +195,7 @@ public final class FieldEvaluator {
                             .getMessage()
                     + " | behavior=" + behavior;
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field evaluation skipped"
                     + " | field=" + field
                     + " | reason=" + reason
@@ -242,7 +242,7 @@ public final class FieldEvaluator {
                             definition
                     );
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field evaluation skipped"
                     + " | field=" + field
                     + " | executionMode="
@@ -270,7 +270,7 @@ public final class FieldEvaluator {
                 field,
                 fieldValues)) {
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     "Field evaluation skipped"
                     + " | field=" + field
                     + " | reason="
@@ -294,7 +294,7 @@ public final class FieldEvaluator {
          * =====================================================
          */
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field passed all field-control rules"
                 + " | page=" + page.getSimpleName()
                 + " | field=" + field
@@ -463,7 +463,7 @@ public final class FieldEvaluator {
                         condition.getExpectedValue()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field condition evaluated"
                 + " | page=" + page.getSimpleName()
                 + " | field=" + field

@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.qaverse.smart.FieldAccessControl.Builder.ConditionBuilder;
 import com.qaverse.smart.FieldAccessControl.Condition.ConditionOperator;
 import com.qaverse.smart.FieldAccessControl.Condition.FieldCondition;
-import com.qaverse.smart.logger.SmartLog;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 
 public final class FieldConditionRegistry {
 
@@ -93,7 +93,7 @@ public final class FieldConditionRegistry {
              * The message is constructed only when DEBUG logging
              * is actually enabled.
              */
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     RegistryMessage.CONDITION_REGISTERED.getMessage()
                     + " | page="
                     + page.getSimpleName()
@@ -169,7 +169,7 @@ public final class FieldConditionRegistry {
 
         CONDITIONS.clear();
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field condition registry cleared"
         );
     }

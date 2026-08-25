@@ -1,8 +1,8 @@
 package com.qaverse.smart.FieldAccessControl.Builder;
 
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 import com.qaverse.smart.FieldAccessControl.Model.FieldDefinition;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry;
-import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldDefinitionBuilder<E extends Enum<E>> {
 
@@ -11,14 +11,14 @@ public final class FieldDefinitionBuilder<E extends Enum<E>> {
     public FieldDefinitionBuilder(Class<E> page) {
         this.page = page;
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field definition builder created | page="
                 + (page != null ? page.getSimpleName() : "null"));
     }
 
     public void mandatory(E... fields) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Registering mandatory fields | page="
                 + page.getSimpleName()
                 + " | fieldCount="
@@ -33,7 +33,7 @@ public final class FieldDefinitionBuilder<E extends Enum<E>> {
             );
         }
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Mandatory fields registered | page="
                 + page.getSimpleName()
                 + " | fieldCount="
@@ -42,7 +42,7 @@ public final class FieldDefinitionBuilder<E extends Enum<E>> {
 
     public void optional(E... fields) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Registering optional fields | page="
                 + page.getSimpleName()
                 + " | fieldCount="
@@ -57,7 +57,7 @@ public final class FieldDefinitionBuilder<E extends Enum<E>> {
             );
         }
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Optional fields registered | page="
                 + page.getSimpleName()
                 + " | fieldCount="

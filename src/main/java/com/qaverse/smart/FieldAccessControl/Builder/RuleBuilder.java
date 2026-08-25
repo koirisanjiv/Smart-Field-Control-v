@@ -3,9 +3,9 @@ package com.qaverse.smart.FieldAccessControl.Builder;
 import com.qaverse.smart.FieldAccessControl.Configuration.FieldBehavior;
 import com.qaverse.smart.FieldAccessControl.Configuration.OperationMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 import com.qaverse.smart.FieldAccessControl.Model.FieldContext;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry;
-import com.qaverse.smart.logger.SmartLog;
 
 public final class RuleBuilder<F extends Enum<F>> {
 
@@ -14,7 +14,7 @@ public final class RuleBuilder<F extends Enum<F>> {
     public RuleBuilder(Class<F> page) {
         this.page = page;
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Rule builder created | page="
                 + (page != null ? page.getSimpleName() : "null"));
     }
@@ -64,7 +64,7 @@ public final class RuleBuilder<F extends Enum<F>> {
             FieldBehavior behavior,
             F... fields) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Registering field rules | page="
                 + page.getSimpleName()
                 + " | operationMode="
@@ -89,7 +89,7 @@ public final class RuleBuilder<F extends Enum<F>> {
             );
         }
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field rules registered | page="
                 + page.getSimpleName()
                 + " | behavior="

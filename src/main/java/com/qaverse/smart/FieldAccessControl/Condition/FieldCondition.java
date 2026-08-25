@@ -1,6 +1,6 @@
 package com.qaverse.smart.FieldAccessControl.Condition;
 
-import com.qaverse.smart.logger.SmartLog;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 
 public final class FieldCondition<E extends Enum<E>> {
 
@@ -17,14 +17,14 @@ public final class FieldCondition<E extends Enum<E>> {
 
 		if (controllerField == null) {
 
-			SmartLog.error(ConditionMessage.CONTROLLER_FIELD_NULL::getMessage);
+			FieldControlLogger.error(ConditionMessage.CONTROLLER_FIELD_NULL::getMessage);
 
 			throw new IllegalArgumentException(ConditionMessage.CONTROLLER_FIELD_NULL.getMessage());
 		}
 
 		if (operator == null) {
 
-			SmartLog.error(ConditionMessage.CONDITION_OPERATOR_NULL::getMessage);
+			FieldControlLogger.error(ConditionMessage.CONDITION_OPERATOR_NULL::getMessage);
 
 			throw new IllegalArgumentException(ConditionMessage.CONDITION_OPERATOR_NULL.getMessage());
 		}
@@ -33,7 +33,7 @@ public final class FieldCondition<E extends Enum<E>> {
 		this.operator = operator;
 		this.expectedValue = expectedValue;
 
-		SmartLog.debug(() -> "Field condition created | controllerField=" + controllerField + " | operator=" + operator
+		FieldControlLogger.debug(() -> "Field condition created | controllerField=" + controllerField + " | operator=" + operator
 				+ " | expectedValue=" + expectedValue);
 	}
 

@@ -6,8 +6,8 @@ import java.util.Objects;
 import com.qaverse.smart.FieldAccessControl.Configuration.ExecutionMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.OperationMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionContext;
-import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldExecutionContextBuilder<E extends Enum<E>> {
 
@@ -28,7 +28,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
     public static <E extends Enum<E>>
     FieldExecutionContextBuilder<E> builder() {
 
-        SmartLog.debug("Creating field execution context builder");
+        FieldControlLogger.debug("Creating field execution context builder");
 
         return new FieldExecutionContextBuilder<>();
     }
@@ -42,7 +42,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
                         BuilderMessage.PAGE_NULL.getMessage()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field execution context page configured | page="
                 + page.getSimpleName());
 
@@ -58,7 +58,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
                         BuilderMessage.OPERATION_MODE_NULL.getMessage()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field execution context operation mode configured | mode="
                 + operationMode);
 
@@ -74,7 +74,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
                         BuilderMessage.EXECUTION_MODE_NULL.getMessage()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field execution context execution mode configured | mode="
                 + executionMode);
 
@@ -90,7 +90,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
                         BuilderMessage.CURRENT_USER_NULL.getMessage()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field execution context user configured | user="
                 + currentUser);
 
@@ -106,7 +106,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
                         BuilderMessage.FIELD_VALUES_NULL.getMessage()
                 );
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field execution context values configured | fieldCount="
                 + fieldValues.size());
 
@@ -115,7 +115,7 @@ public final class FieldExecutionContextBuilder<E extends Enum<E>> {
 
     public FieldExecutionContext<E> build() {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Building field execution context | page="
                 + (page != null ? page.getSimpleName() : "null")
                 + " | operationMode="

@@ -1,6 +1,6 @@
 package com.qaverse.smart.FieldAccessControl.Configuration;
 
-import com.qaverse.smart.logger.SmartLog;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 
 public final class UserTypeResolver {
 
@@ -9,13 +9,13 @@ public final class UserTypeResolver {
 
     public static UserType resolve(String value) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Resolving user type | value="
                 + value);
 
         if (value == null || value.isBlank()) {
 
-            SmartLog.error(
+            FieldControlLogger.error(
                     ConfigurationMessage.USER_TYPE_NULL_OR_EMPTY::getMessage);
 
             throw new IllegalArgumentException(
@@ -27,7 +27,7 @@ public final class UserTypeResolver {
 
             if (userType.matches(value)) {
 
-                SmartLog.debug(() ->
+                FieldControlLogger.debug(() ->
                         "User type resolved | value="
                         + value
                         + " | userType="
@@ -37,7 +37,7 @@ public final class UserTypeResolver {
             }
         }
 
-        SmartLog.error(() ->
+        FieldControlLogger.error(() ->
                 ConfigurationMessage.UNSUPPORTED_USER_TYPE.getMessage()
                 + value);
 

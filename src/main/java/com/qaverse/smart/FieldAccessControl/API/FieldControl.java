@@ -9,9 +9,9 @@ import com.qaverse.smart.FieldAccessControl.Configuration.ExecutionMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.OperationMode;
 import com.qaverse.smart.FieldAccessControl.Configuration.UserType;
 import com.qaverse.smart.FieldAccessControl.Execution.FieldEvaluator;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionContext;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionPlan;
-import com.qaverse.smart.logger.SmartLog;
 
 public final class FieldControl {
 
@@ -27,7 +27,7 @@ public final class FieldControl {
      */
     public static <E extends Enum<E>> RuleBuilder<E> rules(Class<E> page) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Creating rule builder | page="
                 + (page != null ? page.getSimpleName() : "null"));
 
@@ -39,7 +39,7 @@ public final class FieldControl {
      */
     public static <E extends Enum<E>> FieldDefinitionBuilder<E> definitions(Class<E> page) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Creating field-definition builder | page="
                 + (page != null ? page.getSimpleName() : "null"));
 
@@ -59,7 +59,7 @@ public final class FieldControl {
      */
     public static <E extends Enum<E>> FieldControlRequest.Builder<E> request(Class<E> page) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Creating field-control request | page="
                 + (page != null ? page.getSimpleName() : "null"));
 
@@ -96,7 +96,7 @@ public final class FieldControl {
 
         String pageName = request.getPage().getSimpleName();
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 FieldControlMessage.EVALUATION_STARTED.getMessage()
                 + " | page=" + pageName
                 + " | operationMode=" + request.getOperationMode()
@@ -114,7 +114,7 @@ public final class FieldControl {
 
             FieldExecutionPlan<E> plan = FieldEvaluator.evaluate(context);
 
-            SmartLog.debug(() ->
+            FieldControlLogger.debug(() ->
                     FieldControlMessage.EVALUATION_COMPLETED.getMessage()
                     + " | page=" + pageName);
 
@@ -122,7 +122,7 @@ public final class FieldControl {
 
         } catch (RuntimeException exception) {
 
-            SmartLog.error( () ->
+            FieldControlLogger.error( () ->
                     FieldControlMessage.EVALUATION_FAILED.getMessage()
                     + " | page=" + pageName,
                     exception);
@@ -195,7 +195,7 @@ public final class FieldControl {
      */
     public static void clear() {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 FieldControlMessage.REGISTRY_CLEANUP_STARTED.getMessage());
 
         com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry.clear();
@@ -206,7 +206,7 @@ public final class FieldControl {
 
         com.qaverse.smart.FieldAccessControl.Registry.MetadataRegistry.clear();
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 FieldControlMessage.REGISTRY_CLEANUP_COMPLETED.getMessage());
     }
 }

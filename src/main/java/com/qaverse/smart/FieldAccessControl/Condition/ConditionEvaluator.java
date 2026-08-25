@@ -1,6 +1,6 @@
 package com.qaverse.smart.FieldAccessControl.Condition;
 
-import com.qaverse.smart.logger.SmartLog;
+import com.qaverse.smart.FieldAccessControl.Logging.FieldControlLogger;
 
 public final class ConditionEvaluator {
 
@@ -12,7 +12,7 @@ public final class ConditionEvaluator {
             ConditionOperator operator,
             Object expectedValue) {
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Evaluating field condition | operator="
                 + operator
                 + " | actualValue="
@@ -64,7 +64,7 @@ public final class ConditionEvaluator {
                 break;
         }
 
-        SmartLog.debug(() ->
+        FieldControlLogger.debug(() ->
                 "Field condition evaluated | operator="
                 + operator
                 + " | result="
