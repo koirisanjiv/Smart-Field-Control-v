@@ -16,6 +16,7 @@ import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionContext;
 import com.qaverse.smart.FieldAccessControl.Model.FieldExecutionPlan;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldConditionRegistry;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldDefinitionRegistry;
+import com.qaverse.smart.FieldAccessControl.Registry.FieldGroupRegistry;
 import com.qaverse.smart.FieldAccessControl.Registry.FieldRegistry;
 
 public final class FieldEvaluator {
@@ -31,8 +32,8 @@ public final class FieldEvaluator {
      * </p>
      *
      * <p>
-     * It only determines whether each field is allowed to proceed and provides the
-     * reason when it is skipped.
+     * It only determines whether each field is allowed to proceed and provides
+     * the reason when it is skipped.
      * </p>
      */
     public static <E extends Enum<E>> FieldExecutionPlan<E> evaluate(
@@ -55,6 +56,9 @@ public final class FieldEvaluator {
         List<FieldDecision<E>> decisions =
                 new ArrayList<>();
 
+        /*
+         * EnumMap iteration follows enum declaration order.
+         */
         for (Map.Entry<E, Object> entry :
                 fieldValues.entrySet()) {
 
@@ -120,7 +124,8 @@ public final class FieldEvaluator {
                     "Field evaluation skipped"
                     + " | field=" + field
                     + " | reason="
-                    + ExecutionMessage.FIELD_VALUE_INVALID.getMessage()
+                    + ExecutionMessage.FIELD_VALUE_INVALID
+                            .getMessage()
             );
 
             return FieldEvaluationResult.skipped(
@@ -261,7 +266,69 @@ public final class FieldEvaluator {
 
         /*
          * =====================================================
-         * 8. Check conditional dependency
+         * 8. Check parent field group
+         * =====================================================
+         *
+         * If this field belongs to a parent group:
+         *
+         *     Parent TRUE  -> continue
+         *     Parent FALSE -> SKIPPED_PARENT
+         *
+         * For multiple controllers:
+         *
+         *     Controller A TRUE
+         *              OR
+         *     Controller B TRUE
+         *              OR
+         *     Controller C TRUE
+         *
+         * Any TRUE means the child is active.
+         */
+
+        List<E> parentControllers =
+                FieldGroupRegistry.getControllers(
+                        page,
+                        field
+                );
+
+        if (!parentControllers.isEmpty()) {
+
+            boolean parentActive =
+                    isParentGroupActive(
+                            page,
+                            field,
+                            parentControllers,
+                            fieldValues
+                    );
+
+            if (!parentActive) {
+
+                String reason =
+                        "Parent controller is not active"
+                        + " | controllers="
+                        + parentControllers;
+
+                FieldControlLogger.debug(() ->
+                        "Field evaluation skipped"
+                        + " | field=" + field
+                        + " | status="
+                        + FieldEvaluationStatus.SKIPPED_PARENT
+                        + " | reason=" + reason
+                );
+
+                return FieldEvaluationResult.skipped(
+                        field,
+                        value,
+                        FieldEvaluationStatus.SKIPPED_PARENT,
+                        behavior,
+                        reason
+                );
+            }
+        }
+
+        /*
+         * =====================================================
+         * 9. Check conditional dependency
          * =====================================================
          */
 
@@ -270,12 +337,17 @@ public final class FieldEvaluator {
                 field,
                 fieldValues)) {
 
+            String reason =
+                    ExecutionMessage
+                            .FIELD_CONDITION_NOT_SATISFIED
+                            .getMessage();
+
             FieldControlLogger.debug(() ->
                     "Field evaluation skipped"
                     + " | field=" + field
-                    + " | reason="
-                    + ExecutionMessage.FIELD_CONDITION_NOT_SATISFIED
-                            .getMessage()
+                    + " | status="
+                    + FieldEvaluationStatus.SKIPPED_CONDITION
+                    + " | reason=" + reason
             );
 
             return FieldEvaluationResult.skipped(
@@ -283,14 +355,13 @@ public final class FieldEvaluator {
                     value,
                     FieldEvaluationStatus.SKIPPED_CONDITION,
                     behavior,
-                    ExecutionMessage.FIELD_CONDITION_NOT_SATISFIED
-                            .getMessage()
+                    reason
             );
         }
 
         /*
          * =====================================================
-         * 9. Field passed all rules
+         * 10. Field passed all rules
          * =====================================================
          */
 
@@ -425,6 +496,86 @@ public final class FieldEvaluator {
     }
 
     // =========================================================
+    // PARENT FIELD GROUP CONTROL
+    // =========================================================
+
+    /**
+     * Determines whether a field's parent group is active.
+     *
+     * <p>
+     * Multiple parent controllers are evaluated using OR logic.
+     * </p>
+     *
+     * <p>
+     * Example:
+     *
+     * <pre>
+     * MAIN_CONTROLLER  = false
+     * START_CONTROLLER = true
+     * END_CONTROLLER   = false
+     *
+     * Shared field = ALLOWED
+     * </pre>
+     *
+     * because START_CONTROLLER is true.
+     */
+    private static <E extends Enum<E>> boolean isParentGroupActive(
+            Class<E> page,
+            E field,
+            List<E> parentControllers,
+            EnumMap<E, Object> fieldValues) {
+
+        for (E controller : parentControllers) {
+
+            Object controllerValue =
+                    fieldValues.get(controller);
+
+            boolean active =
+                    isTrueValue(controllerValue);
+
+            FieldControlLogger.debug(() ->
+                    "Parent group evaluated"
+                    + " | page=" + page.getSimpleName()
+                    + " | field=" + field
+                    + " | controller=" + controller
+                    + " | value=" + controllerValue
+                    + " | active=" + active
+            );
+
+            /*
+             * OR logic:
+             * One active controller is enough.
+             */
+            if (active) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Safely evaluates a controller value as TRUE.
+     */
+    private static boolean isTrueValue(Object value) {
+
+        if (value == null) {
+            return false;
+        }
+
+        String actualValue =
+                value.toString().trim();
+
+        if (actualValue.isEmpty()
+                || "NA".equalsIgnoreCase(actualValue)) {
+
+            return false;
+        }
+
+        return Boolean.parseBoolean(actualValue);
+    }
+
+    // =========================================================
     // CONDITIONAL FIELD CONTROL
     // =========================================================
 
@@ -434,21 +585,96 @@ public final class FieldEvaluator {
             E field,
             EnumMap<E, Object> fieldValues) {
 
-        FieldCondition<E> condition =
-                FieldConditionRegistry.get(
+        List<FieldCondition<E>> anyConditions =
+                FieldConditionRegistry.getAnyConditions(
+                        page,
+                        field
+                );
+
+        List<List<FieldCondition<E>>> allConditionGroups =
+                FieldConditionRegistry.getAllConditions(
                         page,
                         field
                 );
 
         /*
-         * No condition means field is allowed from the
-         * condition perspective.
+         * No condition means the field is allowed
+         * from the condition perspective.
          */
-
-        if (condition == null) {
+        if (anyConditions.isEmpty()
+                && allConditionGroups.isEmpty()) {
 
             return true;
         }
+
+        /*
+         * =====================================================
+         * OR CONDITIONS
+         * =====================================================
+         *
+         * Any single condition can satisfy the field.
+         */
+
+        for (FieldCondition<E> condition :
+                anyConditions) {
+
+            if (evaluateCondition(
+                    page,
+                    field,
+                    condition,
+                    fieldValues)) {
+
+                return true;
+            }
+        }
+
+        /*
+         * =====================================================
+         * AND CONDITION GROUPS
+         * =====================================================
+         *
+         * Every condition inside one group must pass.
+         *
+         * Multiple AND groups are OR'ed.
+         */
+
+        for (List<FieldCondition<E>> group :
+                allConditionGroups) {
+
+            boolean groupSatisfied = true;
+
+            for (FieldCondition<E> condition :
+                    group) {
+
+                if (!evaluateCondition(
+                        page,
+                        field,
+                        condition,
+                        fieldValues)) {
+
+                    groupSatisfied = false;
+                    break;
+                }
+            }
+
+            if (groupSatisfied) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // =========================================================
+    // CONDITION EVALUATION
+    // =========================================================
+
+    private static <E extends Enum<E>>
+    boolean evaluateCondition(
+            Class<E> page,
+            E field,
+            FieldCondition<E> condition,
+            EnumMap<E, Object> fieldValues) {
 
         E controllerField =
                 condition.getControllerField();
@@ -469,6 +695,8 @@ public final class FieldEvaluator {
                 + " | field=" + field
                 + " | controller=" + controllerField
                 + " | operator=" + condition.getOperator()
+                + " | expected=" + condition.getExpectedValue()
+                + " | actual=" + controllerValue
                 + " | result=" + result
         );
 

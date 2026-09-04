@@ -14,5 +14,7 @@ public enum FieldEvaluationStatus {
 
     SKIPPED_CONDITION,
 
-    SKIPPED_CUSTOM_FIELDS
+    SKIPPED_CUSTOM_FIELDS,
+    
+    SKIPPED_PARENT
 }
